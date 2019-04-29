@@ -1,21 +1,75 @@
 <html>
 
+</style>
     <script>
+    var arenaTotalWidth = 2000;
+    var arenaTotalHeight = 2000;
 
-    
+    var characterPositionRelativeToArenaX = 400;
+    var characterPositionRelativeToArenaY = 600;
+
+    var backgroundWidth = 300;
+    var backgroundHeight = 300;
+
+    var numBackgroundColumns = arenaTotalWidth/backgroundWidth;
+    var numBackgroundRows = arenaTotalHeight/backgroundHeight;
+    /*Code by Hadden Smith, Hunter Kjar, Spencer Hobert*/
+    /*Artwork and Inspiration by Caden Espindola, and Jayden Lintz*/
+
       window.onload = function() {
-        var Arena = documnet.getElementById('Arena');
-        Arena.style.width = window.innerWidth();
-        Arena.style.height
-      }
-      
-    
-    </script>
-    
-  <body>
-    <div id="Arena" style="background-color:red; position:absolute; top: 0; left: 0;" >
+        window.addEventListener("keypress", Move, false);
+	      window.onkeydown = Move;
+        var Arena = document.getElementById('Arena');
+        var character = document.getElementById("character");
+        var CharImg = document.getElementById('charimg');
 
+        for (var i = 0; i < numBackgroundRows; i++) {
+          for (var j = 0; j < numBackgroundColumns; j++) {
+            var tile = document.createElement('img');
+            tile.style.position = "absolute";
+            tile.id = (j+'-'+i);
+            tile.src ="C:\\Users\\20shobert\\Desktop\\MozzarelaPics\\Map.png";
+            tile.style.left = (j * backgroundWidth) - characterPositionRelativeToArenaX;
+            tile.style.top = (i * backgroundHeight) - characterPositionRelativeToArenaY;
+            tile.style.zIndex = -2;
+            Arena.appendChild(tile);
+          }
+        }
+
+        character.style.position = "absolute";
+        CharImg.src = "C:\\Users\\20shobert\\Desktop\\MozzarelaPics\\Mozzarela_Man.png";
+
+        setInterval(function() { //Put code to pull from server and update users screen
+          Arena.style.width = window.innerWidth;
+          Arena.style.height = window.innerHeight;
+          character.style.left = ((window.innerWidth / 2) - (150)) + "px";
+          character.style.top =  ((window.innerHeight / 2) - (150)) + "px";
+          for (var i = 0; i < numBackgroundRows; i++) {
+            for (var j = 0; j < numBackgroundColumns; j++) {
+              var tile = document.getElementById(j+'-'+i);
+              tile.style.left = (j * backgroundWidth) - characterPositionRelativeToArenaX;
+              tile.style.top = (i * backgroundHeight) - characterPositionRelativeToArenaY;
+            }
+          }
+        }, 10);
+
+      }
+
+      function Move(event){
+        if ((event.key).toLowerCase() == "w" || event.keyCode == 38) characterPositionRelativeToArenaY-=1;
+		    if ((event.key).toLowerCase() == "a" || event.keyCode == 37) characterPositionRelativeToArenaX-=1;
+		    if ((event.key).toLowerCase() == "s" || event.keyCode == 40) characterPositionRelativeToArenaY+=1;;
+		    if ((event.key).toLowerCase() == "d" || event.keyCode == 39) characterPositionRelativeToArenaX+=1;;
+      }
+
+    </script>
+
+  <body>
+    <div id="Arena" style="position:absolute; top: 0; left: 0; overflow: hidden" >
+      <div id="character">
+        <img id="charimg"></img>
+      </div>
     </div>
-    
+
   </body>
 </html>
