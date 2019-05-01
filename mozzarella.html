@@ -1,10 +1,13 @@
 <html>
 
-</style>
     <script>
     var arenaTotalWidth = 2000;
     var arenaTotalHeight = 2000;
-
+    var SizeOfCharacterInPX = 150;
+    var Arena;
+    var character;
+    var CharImg;
+    var timeoutDelay = 100;
     var characterPositionRelativeToArenaX = 400;
     var characterPositionRelativeToArenaY = 600;
 
@@ -13,22 +16,66 @@
 
     var numBackgroundColumns = arenaTotalWidth/backgroundWidth;
     var numBackgroundRows = arenaTotalHeight/backgroundHeight;
+
+    var MyId = null;
     /*Code by Hadden Smith, Hunter Kjar, Spencer Hobert*/
     /*Artwork and Inspiration by Caden Espindola, and Jayden Lintz*/
 
-      window.onload = function() {
+
+      window.onload = function() { //Title Screen Where we can choose charictor
+        var startScreen = document.getElementById('startScreen');
+        Arena = document.getElementById('Arena');
+        character = document.getElementById("character");
+        CharImg = document.getElementById('charimg');
+        startScreen.style.width = window.innerWidth + "px";
+        startScreen.style.height = window.innerHeight + "px";
+        startScreen.style.top = "0px";
+        startScreen.style.left = "0px";
+
+        //startScreen.style.display = "none";
+        //StartGame();
+      }
+  //anHttpRequest for HttpClient
+  var HttpClient = function() {
+	this.get = function(aUrl, aCallback) {
+		var anHttpRequest = new XMLHttpRequest();
+		anHttpRequest.onreadystatechange = function() {
+			if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200) // used to be gridsize, needs to be 200
+				aCallback(anHttpRequest.responseText);
+		}
+		anHttpRequest.open( "GET", aUrl, true );
+		anHttpRequest.send( null );
+	}
+
+	this.post = function(aUrl, jsonObj, aCallback) {
+
+		var stringObj = JSON.stringify(jsonObj);
+
+	var xhttp = new XMLHttpRequest();
+	  xhttp.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			aCallback(xhttp.responseText);
+
+		}
+	  };
+	  xhttp.open("POST", aUrl, true);
+	   xhttp.setRequestHeader("Content-type", "application/json;charset=UTF-8");
+		xhttp.send(stringObj);
+	  }
+	}
+//end of anHttpRequest
+
+      function StartGame() {
         window.addEventListener("keypress", Move, false);
 	      window.onkeydown = Move;
-        var Arena = document.getElementById('Arena');
-        var character = document.getElementById("character");
-        var CharImg = document.getElementById('charimg');
+        document.getElementById("startButton").style.display = "none";
 
         for (var i = 0; i < numBackgroundRows; i++) {
           for (var j = 0; j < numBackgroundColumns; j++) {
             var tile = document.createElement('img');
             tile.style.position = "absolute";
             tile.id = (j+'-'+i);
-            tile.src ="C:\\Users\\20shobert\\Desktop\\MozzarelaPics\\Map.png";
+            tile.src ="http://10.65.1.197:8000/mozzimage/Map.png";
             tile.style.left = (j * backgroundWidth) - characterPositionRelativeToArenaX;
             tile.style.top = (i * backgroundHeight) - characterPositionRelativeToArenaY;
             tile.style.zIndex = -2;
@@ -37,34 +84,115 @@
         }
 
         character.style.position = "absolute";
-        CharImg.src = "C:\\Users\\20shobert\\Desktop\\MozzarelaPics\\Mozzarela_Man.png";
+        character.style.width = SizeOfCharacterInPX + "px";
+        character.style.height = SizeOfCharacterInPX + "px";
+        CharImg.style.width = SizeOfCharacterInPX + "px";
+        CharImg.style.height = SizeOfCharacterInPX + "px";
+        CharImg.src = "http://10.65.1.197:8000/mozzimage/Mozzarela_Man.png";
 
-        setInterval(function() { //Put code to pull from server and update users screen
-          Arena.style.width = window.innerWidth;
-          Arena.style.height = window.innerHeight;
-          character.style.left = ((window.innerWidth / 2) - (150)) + "px";
-          character.style.top =  ((window.innerHeight / 2) - (150)) + "px";
-          for (var i = 0; i < numBackgroundRows; i++) {
-            for (var j = 0; j < numBackgroundColumns; j++) {
-              var tile = document.getElementById(j+'-'+i);
-              tile.style.left = (j * backgroundWidth) - characterPositionRelativeToArenaX;
-              tile.style.top = (i * backgroundHeight) - characterPositionRelativeToArenaY;
-            }
+        UpdateandCallsever();
+      }
+
+      function UpdateandCallsever(){ //Put code to pull from server and update users screen
+        Arena.style.width = window.innerWidth;
+        Arena.style.height = window.innerHeight;
+        character.style.left = ((window.innerWidth / 2) - (SizeOfCharacterInPX/2)) + "px";
+        character.style.top =  ((window.innerHeight / 2) - (SizeOfCharacterInPX/2)) + "px";
+        for (var i = 0; i < numBackgroundRows; i++) {
+          for (var j = 0; j < numBackgroundColumns; j++) {
+            var tile = document.getElementById(j+'-'+i);
+            tile.style.left = (j * backgroundWidth) - characterPositionRelativeToArenaX;
+            tile.style.top = (i * backgroundHeight) - characterPositionRelativeToArenaY;
           }
-        }, 10);
+        }
+        //Pulling code
+        var client = new HttpClient();
+        var listtosend = [characterPositionRelativeToArenaX,characterPositionRelativeToArenaY];
+        var wrappedObj = {'Id':MyId,'list':listtosend,'Isdead':false};
+        			client.post('http://10.65.1.197:8000/mozz/gridsend',wrappedObj, function(response) {
+                client.get('http://10.65.1.197:8000/mozz/gridrecive/5', function(response) {
 
+                    var Mycallback = JSON.parse(response);
+                    var myCall = Mycallback['Listofchange'][0];
+
+                    MyId = myCall.Id;
+
+                    setTimeout(function(){
+
+                					UpdateandCallsever();
+
+                				},timeoutDelay);
+                });
+        });
       }
 
       function Move(event){
-        if ((event.key).toLowerCase() == "w" || event.keyCode == 38) characterPositionRelativeToArenaY-=1;
-		    if ((event.key).toLowerCase() == "a" || event.keyCode == 37) characterPositionRelativeToArenaX-=1;
-		    if ((event.key).toLowerCase() == "s" || event.keyCode == 40) characterPositionRelativeToArenaY+=1;;
-		    if ((event.key).toLowerCase() == "d" || event.keyCode == 39) characterPositionRelativeToArenaX+=1;;
+        if ((event.key).toLowerCase() == "w" || event.keyCode == 38) characterPositionRelativeToArenaY-=3;
+		    if ((event.key).toLowerCase() == "a" || event.keyCode == 37) characterPositionRelativeToArenaX-=3;
+		    if ((event.key).toLowerCase() == "s" || event.keyCode == 40) characterPositionRelativeToArenaY+=3;
+		    if ((event.key).toLowerCase() == "d" || event.keyCode == 39) characterPositionRelativeToArenaX+=3;
       }
 
     </script>
+<!--For Button-->
+<style>
+  html,body{
+    height:100%;
+  }
+  body{
+    text-align:center;
+  }
+  body:before{
+    content:'';
+    height:100%;
+    display:inline-block;
+    vertical-align:middle;
+  }
+  button{
+    background:#1AAB8A;
+    color:#fff;
+    border:none;
+    position:relative;
+    height:60px;
+    font-size:1.6em;
+    padding:0 2em;
+    cursor:pointer;
+    transition:800ms ease all;
+    outline:none;
+  }
+  button:hover{
+    background:#fff;
+    color:#1AAB8A;
+  }
+  button:before,button:after{
+    content:'';
+    position:absolute;
+    top:0;
+    right:0;
+    height:2px;
+    width:0;
+    background: #1AAB8A;
+    transition:400ms ease all;
+  }
+  button:after{
+    right:inherit;
+    top:inherit;
+    left:0;
+    bottom:0;
+  }
+  button:hover:before,button:hover:after{
+    width:100%;
+    transition:800ms ease all;
+  }
+</style>
 
   <body>
+    <div id="startScreen" style="position:absolute">
+      <img id="Title"></img>
+      <div id="characterSelction"></div>
+      <button style="position:absolute;top: 50; left: 50;" id="startButton" onclick="StartGame()">Ready?</button>
+    </div>
+
     <div id="Arena" style="position:absolute; top: 0; left: 0; overflow: hidden" >
       <div id="character">
         <img id="charimg"></img>
