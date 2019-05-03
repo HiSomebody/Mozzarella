@@ -16,9 +16,9 @@
 
     var numBackgroundColumns = arenaTotalWidth/backgroundWidth;
     var numBackgroundRows = arenaTotalHeight/backgroundHeight;
-
+    var Listofpeople
     var MyId = null;
-    /*Code by Hadden Smith, Hunter Kjar, Spencer Hobert*/
+    /*Code by Hadden Smith, Hunter Kjar, and Spencer Hobert*/
     /*Artwork and Inspiration by Caden Espindola, and Jayden Lintz*/
 
 
@@ -68,7 +68,7 @@
       function StartGame() {
         window.addEventListener("keypress", Move, false);
 	      window.onkeydown = Move;
-        document.getElementById("startButton").style.display = "none";
+        document.getElementById("startScreen").style.display = "none";
 
         for (var i = 0; i < numBackgroundRows; i++) {
           for (var j = 0; j < numBackgroundColumns; j++) {
@@ -113,10 +113,10 @@
                 client.get('http://10.65.1.197:8000/mozz/gridrecive/5', function(response) {
 
                     var Mycallback = JSON.parse(response);
-                    var myCall = Mycallback['Listofchange'][0];
-
-                    MyId = myCall.Id;
-
+                    Listofpeople = Mycallback['Listofchange'];
+                    if(MyId == null){
+                    MyId = Mycallback['Listofchange'][Mycallback['Listofchange'].length].Id;
+                  }
                     setTimeout(function(){
 
                 					UpdateandCallsever();
